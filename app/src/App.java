@@ -8,6 +8,11 @@ public class App extends JFrame implements ActionListener {
     
     private JTextField urlField;
     private JEditorPane htmlPane;
+    private JButton backButton;
+    private JButton forwardButton;
+    private String currentUrl;
+    private java.util.Stack<String> backStack;
+    private java.util.Stack<String> forwardStack;
     
     public App() {
         super("Simple Web Browser");
@@ -21,6 +26,17 @@ public class App extends JFrame implements ActionListener {
         JButton goButton = new JButton("Go");
         goButton.addActionListener(this);
         urlPanel.add(goButton, BorderLayout.EAST);
+
+        backButton = new JButton("Back");
+        backButton.addActionListener(this);
+        backButton.setEnabled(false);
+
+        forwardButton = new JButton("Forward");
+        forwardButton.addActionListener(this);
+        forwardButton.setEnabled(false);
+
+        urlPanel.add(backButton, BorderLayout.WEST);
+        urlPanel.add(forwardButton, BorderLayout.SOUTH);
         
         getContentPane().add(urlPanel, BorderLayout.NORTH);
 
@@ -39,18 +55,54 @@ public class App extends JFrame implements ActionListener {
         setVisible(true);
         
         loadURL(urlField.getText());
+
+        currentUrl = urlField.getText();
+        backStack = new java.util.Stack<String>();
+        forwardStack = new java.util.Stack<String>();
     }
     
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == urlField || e.getSource() instanceof JButton) {
-            loadURL(urlField.getText());
+            if (e.getSource() == backButton) {
+                if (!backStack.isEmpty()) {
+                    forwardStack.push(currentUrl);
+                    String backUrl = backStack.pop();
+                    loadURL(backUrl);
+                    urlField.setText(backUrl);
+                    currentUrl = backUrl;
+                    forwardButton.setEnabled(true);
+                    if (backStack.isEmpty()) {
+                        backButton.setEnabled(false);
+                    }
+                }
+            } else if (e.getSource() == forwardButton) {
+                if (!forwardStack.isEmpty()) {
+                    backStack.push(currentUrl);
+                    String forwardUrl = forwardStack.pop();
+                    loadURL(forwardUrl);
+                    urlField.setText(forwardUrl);
+                    currentUrl = forwardUrl;
+                    backButton.setEnabled(true);
+                    if (forwardStack.isEmpty()) {
+                        forwardButton.setEnabled(false);
+                    }
+                }
+            } else {
+                backStack.push(currentUrl);
+                forwardStack.clear();
+                String url = urlField.getText();
+                loadURL(url);
+                currentUrl = url;
+                backButton.setEnabled(true);
+                forwardButton.setEnabled(false);
+            }
         }
     }
     
     private void loadURL(String urlString) {
         try {
             htmlPane.setPage(urlString);
-            urlField.setText(urlString);
+            currentUrl = urlString;
         } catch (Exception e) {
             e.printStackTrace();
         }
