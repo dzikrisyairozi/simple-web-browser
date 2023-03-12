@@ -13,6 +13,8 @@ public class App extends JFrame implements ActionListener {
     private String currentUrl;
     private java.util.Stack<String> backStack;
     private java.util.Stack<String> forwardStack;
+    private JList<String> historyList;
+    private DefaultListModel<String> historyListModel;
     
     public App() {
         super("Simple Web Browser");
@@ -52,6 +54,25 @@ public class App extends JFrame implements ActionListener {
             }
         });
         getContentPane().add(new JScrollPane(htmlPane), BorderLayout.CENTER);
+
+        historyListModel = new DefaultListModel<String>();
+        historyList = new JList<String>(historyListModel);
+        historyList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        historyList.addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting()) {
+                    String url = historyList.getSelectedValue();
+                    loadURL(url);
+                    urlField.setText(url);
+                }
+            }
+        });
+        JScrollPane historyScrollPane = new JScrollPane(historyList);
+
+        JPanel historyPanel = new JPanel(new BorderLayout());
+        historyPanel.add(new JLabel("History:"), BorderLayout.NORTH);
+        historyPanel.add(historyScrollPane, BorderLayout.CENTER);
+        getContentPane().add(historyPanel, BorderLayout.WEST);
         
         setSize(640, 480);
         setVisible(true);
@@ -61,6 +82,7 @@ public class App extends JFrame implements ActionListener {
         currentUrl = urlField.getText();
         backStack = new java.util.Stack<String>();
         forwardStack = new java.util.Stack<String>();
+        historyListModel.addElement(currentUrl);
     }
     
     public void actionPerformed(ActionEvent e) {
@@ -105,10 +127,15 @@ public class App extends JFrame implements ActionListener {
         try {
             htmlPane.setPage(urlString);
             currentUrl = urlString;
+            urlField.setText(urlString);
+            if (!historyListModel.contains(urlString)) {
+                historyListModel.addElement(urlString);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+    
     
     public static void main(String[] args) {
         new App();
