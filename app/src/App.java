@@ -1,62 +1,63 @@
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import javax.swing.event.*;
 import java.net.*;
-import java.io.*;
 
 public class App extends JFrame implements ActionListener {
+    
     private JTextField urlField;
-    private JTextArea pageArea;
-    private JButton goButton;
-
+    private JEditorPane htmlPane;
+    
     public App() {
-        super("Simple Browser");
+        super("Simple Web Browser");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
+        JPanel urlPanel = new JPanel(new BorderLayout());
         urlField = new JTextField("https://www.google.com");
         urlField.addActionListener(this);
-
-        goButton = new JButton("Go");
+        urlPanel.add(urlField, BorderLayout.CENTER);
+        
+        JButton goButton = new JButton("Go");
         goButton.addActionListener(this);
+        urlPanel.add(goButton, BorderLayout.EAST);
+        
+        getContentPane().add(urlPanel, BorderLayout.NORTH);
 
-        pageArea = new JTextArea();
-        pageArea.setEditable(false);
-
-        JScrollPane scrollPane = new JScrollPane(pageArea);
-
-        JPanel panel = new JPanel();
-        panel.setLayout(new BorderLayout());
-        panel.add(urlField, BorderLayout.CENTER);
-        panel.add(goButton, BorderLayout.EAST);
-
-        getContentPane().add(panel, BorderLayout.NORTH);
-        getContentPane().add(scrollPane, BorderLayout.CENTER);
-
-        setSize(800, 600);
-        setVisible(true);
-    }
-
-    public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == urlField || e.getSource() == goButton) {
-            try {
-                URL url = new URL(urlField.getText());
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                connection.setRequestMethod("GET");
-                BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                String line;
-                StringBuilder sb = new StringBuilder();
-                while ((line = reader.readLine()) != null) {
-                    sb.append(line + "\n");
+        htmlPane = new JEditorPane();
+        htmlPane.setEditable(false);
+        htmlPane.addHyperlinkListener(new HyperlinkListener() {
+            public void hyperlinkUpdate(HyperlinkEvent e) {
+                if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                    loadURL(e.getURL().toString());
                 }
-                reader.close();
-                pageArea.setText(sb.toString());
-            } catch (Exception ex) {
-                ex.printStackTrace();
             }
+        });
+        getContentPane().add(new JScrollPane(htmlPane), BorderLayout.CENTER);
+        
+        setSize(640, 480);
+        setVisible(true);
+        
+        loadURL(urlField.getText());
+    }
+    
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == urlField || e.getSource() instanceof JButton) {
+            loadURL(urlField.getText());
         }
     }
-
-    public static void main(String[] args) {
-        App browser = new App();
-        browser.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    
+    private void loadURL(String urlString) {
+        try {
+            htmlPane.setPage(urlString);
+            urlField.setText(urlString);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
+    
+    public static void main(String[] args) {
+        new App();
+    }
+    
 }
