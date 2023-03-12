@@ -27,16 +27,18 @@ public class App extends JFrame implements ActionListener {
         goButton.addActionListener(this);
         urlPanel.add(goButton, BorderLayout.EAST);
 
-        backButton = new JButton("Back");
+        backButton = new JButton("<");
         backButton.addActionListener(this);
         backButton.setEnabled(false);
 
-        forwardButton = new JButton("Forward");
+        forwardButton = new JButton(">");
         forwardButton.addActionListener(this);
         forwardButton.setEnabled(false);
 
-        urlPanel.add(backButton, BorderLayout.WEST);
-        urlPanel.add(forwardButton, BorderLayout.SOUTH);
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        buttonPanel.add(backButton);
+        buttonPanel.add(forwardButton);
+        urlPanel.add(buttonPanel, BorderLayout.WEST);
         
         getContentPane().add(urlPanel, BorderLayout.NORTH);
 
