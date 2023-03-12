@@ -37,9 +37,18 @@ public class App extends JFrame implements ActionListener {
         forwardButton.addActionListener(this);
         forwardButton.setEnabled(false);
 
+        JButton refreshButton = new JButton("Refresh");
+        refreshButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                loadURL(currentUrl);
+            }
+        });
+
+
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         buttonPanel.add(backButton);
         buttonPanel.add(forwardButton);
+        buttonPanel.add(refreshButton);
         urlPanel.add(buttonPanel, BorderLayout.WEST);
         
         getContentPane().add(urlPanel, BorderLayout.NORTH);
