@@ -87,7 +87,7 @@ public class App extends JFrame implements ActionListener {
         historyPanel.add(historyScrollPane, BorderLayout.CENTER);
         getContentPane().add(historyPanel, BorderLayout.WEST);
         
-        setSize(1280, 640);
+        setSize(1080, 768);
         setVisible(true);
         
         loadURL(urlField.getText());
