@@ -1,7 +1,7 @@
 # Simple Web Browser
 
 Develop a simple web browser that can:
-- &#x2610; Open a web page given a URl and shows the text 
+- &#x2611; Open a web page given a URl and shows the text 
 - &#x2610; Show a list of clickable links 
 - &#x2610; Download a file regardless of its size 
 - &#x2610; Download a file in parallel 
