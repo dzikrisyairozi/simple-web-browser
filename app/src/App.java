@@ -138,6 +138,8 @@ public class App extends JFrame implements ActionListener {
     }
     private void loadURL(String urlString) {
         try {
+            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR)); // set cursor to loading state
+    
             URL url = new URL(urlString);
             progressBar.setValue(0); // reset progress bar
             progressBar.setIndeterminate(true);
@@ -160,6 +162,7 @@ public class App extends JFrame implements ActionListener {
             progressBar.setIndeterminate(false); // Set the progress bar to a determinate state
             progressBar.setValue(100);
     
+            setCursor(Cursor.getDefaultCursor()); // set cursor back to default
         } catch (Exception e) {
             e.printStackTrace();
         }
