@@ -151,14 +151,22 @@ public class App extends JFrame implements ActionListener {
             if (status == HttpURLConnection.HTTP_MOVED_TEMP || status == HttpURLConnection.HTTP_MOVED_PERM) {
                 String redirectUrl = conn.getHeaderField("Location");
                 url = new URL(redirectUrl);
+                conn = (HttpURLConnection) url.openConnection();
+                status = conn.getResponseCode();
             }
     
-            htmlPane.setPage(url);
-            currentUrl = url.toString();
-            urlField.setText(currentUrl);
-            if (!historyListModel.contains(currentUrl)) {
-                historyListModel.addElement(currentUrl);
+            if (status >= HttpURLConnection.HTTP_BAD_REQUEST) {
+                htmlPane.setContentType("text/html");
+                htmlPane.setText("<html><body><h1>Error " + status + "</h1><p>" + conn.getResponseMessage() + "</p></body></html>");
+            } else {
+                htmlPane.setPage(url);
+                currentUrl = url.toString();
+                urlField.setText(currentUrl);
+                if (!historyListModel.contains(currentUrl)) {
+                    historyListModel.addElement(currentUrl);
+                }
             }
+    
             progressBar.setIndeterminate(false); // Set the progress bar to a determinate state
             progressBar.setValue(100);
     
@@ -167,6 +175,7 @@ public class App extends JFrame implements ActionListener {
             e.printStackTrace();
         }
     }
+    
     
     
     public static void main(String[] args) {
