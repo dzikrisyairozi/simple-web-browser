@@ -1,0 +1,55 @@
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+import javax.swing.event.*;
+import java.net.*;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
+
+
+public class App extends JFrame {
+    private JTextField urlField;
+    private JTextArea textArea;
+
+    public App() {
+        super("Simple Browser");
+
+        urlField = new JTextField("https://www.google.com");
+        urlField.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    URL url = new URL(urlField.getText());
+                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                    connection.setRequestMethod("GET");
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                    StringBuilder sb = new StringBuilder();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        sb.append(line + "\n");
+                    }
+                    reader.close();
+                    textArea.setText(sb.toString());
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+
+        textArea = new JTextArea();
+        textArea.setEditable(false);
+
+        JScrollPane scrollPane = new JScrollPane(textArea);
+
+        getContentPane().add(urlField, BorderLayout.NORTH);
+        getContentPane().add(scrollPane, BorderLayout.CENTER);
+
+        setSize(800, 600);
+        setVisible(true);
+    }
+
+    public static void main(String[] args) {
+        App browser = new App();
+        browser.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    }
+}
