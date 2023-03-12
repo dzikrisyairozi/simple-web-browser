@@ -15,6 +15,7 @@ public class App extends JFrame implements ActionListener {
     private java.util.Stack<String> forwardStack;
     private JList<String> historyList;
     private DefaultListModel<String> historyListModel;
+    private JProgressBar progressBar;
     
     public App() {
         super("Simple Web Browser");
@@ -50,6 +51,9 @@ public class App extends JFrame implements ActionListener {
         buttonPanel.add(forwardButton);
         buttonPanel.add(refreshButton);
         urlPanel.add(buttonPanel, BorderLayout.WEST);
+        progressBar = new JProgressBar();
+        progressBar.setStringPainted(true); 
+        getContentPane().add(progressBar, BorderLayout.SOUTH);
         
         getContentPane().add(urlPanel, BorderLayout.NORTH);
 
@@ -112,6 +116,7 @@ public class App extends JFrame implements ActionListener {
                 if (!forwardStack.isEmpty()) {
                     backStack.push(currentUrl);
                     String forwardUrl = forwardStack.pop();
+                    progressBar.setValue(0);
                     loadURL(forwardUrl);
                     urlField.setText(forwardUrl);
                     currentUrl = forwardUrl;
@@ -134,6 +139,8 @@ public class App extends JFrame implements ActionListener {
     private void loadURL(String urlString) {
         try {
             URL url = new URL(urlString);
+            progressBar.setValue(0); // reset progress bar
+            progressBar.setIndeterminate(true);
     
             // Check if the URL is a redirect
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -150,6 +157,9 @@ public class App extends JFrame implements ActionListener {
             if (!historyListModel.contains(currentUrl)) {
                 historyListModel.addElement(currentUrl);
             }
+            progressBar.setIndeterminate(false); // Set the progress bar to a determinate state
+            progressBar.setValue(100);
+    
         } catch (Exception e) {
             e.printStackTrace();
         }
