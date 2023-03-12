@@ -1,18 +1,11 @@
-## Getting Started
+# Simple Web Browser
 
-Welcome to the VS Code Java world. Here is a guideline to help you get started to write Java code in Visual Studio Code.
-
-## Folder Structure
-
-The workspace contains two folders by default, where:
-
-- `src`: the folder to maintain sources
-- `lib`: the folder to maintain dependencies
-
-Meanwhile, the compiled output files will be generated in the `bin` folder by default.
-
-> If you want to customize the folder structure, open `.vscode/settings.json` and update the related settings there.
-
-## Dependency Management
-
-The `JAVA PROJECTS` view allows you to manage your dependencies. More details can be found [here](https://github.com/microsoft/vscode-java-dependency#manage-dependencies).
+Develop a simple web browser that can:
+- &#x2610; Open a web page given a URl and shows the text 
+- &#x2610; Show a list of clickable links 
+- &#x2610; Download a file regardless of its size 
+- &#x2610; Download a file in parallel 
+- &#x2610; Follow redirections 
+- &#x2610; Show respective HTTP error messages 
+- &#x2610; Open a web page that is a protected by HTTP basic authentication 
+- &#x2610; Can access a web page that is protected behind a login page 
