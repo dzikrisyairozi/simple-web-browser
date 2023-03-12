@@ -131,14 +131,24 @@ public class App extends JFrame implements ActionListener {
             }
         }
     }
-    
     private void loadURL(String urlString) {
         try {
-            htmlPane.setPage(urlString);
-            currentUrl = urlString;
-            urlField.setText(urlString);
-            if (!historyListModel.contains(urlString)) {
-                historyListModel.addElement(urlString);
+            URL url = new URL(urlString);
+    
+            // Check if the URL is a redirect
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setInstanceFollowRedirects(false);
+            int status = conn.getResponseCode();
+            if (status == HttpURLConnection.HTTP_MOVED_TEMP || status == HttpURLConnection.HTTP_MOVED_PERM) {
+                String redirectUrl = conn.getHeaderField("Location");
+                url = new URL(redirectUrl);
+            }
+    
+            htmlPane.setPage(url);
+            currentUrl = url.toString();
+            urlField.setText(currentUrl);
+            if (!historyListModel.contains(currentUrl)) {
+                historyListModel.addElement(currentUrl);
             }
         } catch (Exception e) {
             e.printStackTrace();
