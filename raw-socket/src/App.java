@@ -1,5 +1,9 @@
 import java.awt.*;
 import java.awt.event.*;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+
 import javax.swing.*;
 import javax.swing.event.*;
 import java.net.*;
@@ -138,62 +142,45 @@ public class App extends JFrame implements ActionListener {
     }
     private void loadURL(String urlString) {
         try {
-            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR)); // set cursor to loading state
-    
             URL url = new URL(urlString);
-            progressBar.setValue(0); // reset progress bar
-            progressBar.setIndeterminate(true);
-    
-            // Check if the URL is a redirect
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setInstanceFollowRedirects(false);
-            int status = conn.getResponseCode();
-            if (status == HttpURLConnection.HTTP_MOVED_TEMP || status == HttpURLConnection.HTTP_MOVED_PERM) {
-                String redirectUrl = conn.getHeaderField("Location");
-                url = new URL(redirectUrl);
-                conn = (HttpURLConnection) url.openConnection();
-                status = conn.getResponseCode();
+            String host = url.getHost();
+            int port = url.getPort() == -1 ? 80 : url.getPort();
+            String path = url.getPath().isEmpty() ? "/" : url.getPath();
+            
+            // Open socket connection to the server
+            Socket socket = new Socket(host, port);
+            
+            // Send HTTP request to the server
+            PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
+            writer.println("GET " + path + " HTTP/1.1");
+            writer.println("Host: " + host);
+            writer.println("Connection: close");
+            writer.println();
+            
+            // Read the HTTP response from the server
+            BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            StringBuilder responseBuilder = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                responseBuilder.append(line).append("\n");
             }
-
-            // Basic Authentication
-            if (status == HttpURLConnection.HTTP_UNAUTHORIZED) {
-                JTextField userField = new JTextField(10);
-                JTextField passField = new JTextField(10);
-                JPanel authPopup = new JPanel();
-                authPopup.add(new JLabel("username:"));
-                authPopup.add(userField);
-                authPopup.add(new JLabel("password:"));
-                authPopup.add(passField);
-
-                int result = JOptionPane.showConfirmDialog(null, authPopup, 
-                "Enter username and password to sign in", JOptionPane.OK_CANCEL_OPTION);
+            
+            // Extract the HTML content from the response
+            String response = responseBuilder.toString();
+            int htmlStartIndex = response.indexOf("<html");
+            if (htmlStartIndex != -1) {
+                String htmlContent = response.substring(htmlStartIndex);
                 
-                if (result == JOptionPane.OK_OPTION) {
-                    String userpass = userField.getText() + ":" + passField.getText();
-                    String basicAuth = "Basic " + new String(Base64.getEncoder().encode(userpass.getBytes()));
-                    conn.disconnect();
-                    conn = (HttpURLConnection) url.openConnection();
-                    conn.setRequestProperty("Authorization", basicAuth);
-                    status = conn.getResponseCode();
-                } 
-            } 
-
-            if (status >= HttpURLConnection.HTTP_BAD_REQUEST) {
-                htmlPane.setContentType("text/html");
-                htmlPane.setText("<html><body><h1>Error " + status + "</h1><p>" + conn.getResponseMessage() + "</p></body></html>");
-            } else {
-                htmlPane.setPage(conn.getURL());
-                currentUrl = conn.getURL().toString();
-                urlField.setText(currentUrl);
-                if (!historyListModel.contains(currentUrl)) {
-                    historyListModel.addElement(currentUrl);
+                // Display the HTML content
+                htmlPane.setText(htmlContent);
+                currentUrl = urlString;
+                urlField.setText(urlString);
+                if (!historyListModel.contains(urlString)) {
+                    historyListModel.addElement(urlString);
                 }
             }
-    
-            progressBar.setIndeterminate(false); // Set the progress bar to a determinate state
-            progressBar.setValue(100);
-    
-            setCursor(Cursor.getDefaultCursor()); // set cursor back to default
+            
+            socket.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
