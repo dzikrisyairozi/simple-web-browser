@@ -3,6 +3,7 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import java.net.*;
+import java.util.Base64;
 
 public class App extends JFrame implements ActionListener {
     
@@ -44,7 +45,6 @@ public class App extends JFrame implements ActionListener {
                 loadURL(currentUrl);
             }
         });
-
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         buttonPanel.add(backButton);
@@ -154,13 +154,36 @@ public class App extends JFrame implements ActionListener {
                 conn = (HttpURLConnection) url.openConnection();
                 status = conn.getResponseCode();
             }
-    
+
+            // Basic Authentication
+            if (status == HttpURLConnection.HTTP_UNAUTHORIZED) {
+                JTextField userField = new JTextField(10);
+                JTextField passField = new JTextField(10);
+                JPanel authPopup = new JPanel();
+                authPopup.add(new JLabel("username:"));
+                authPopup.add(userField);
+                authPopup.add(new JLabel("password:"));
+                authPopup.add(passField);
+
+                int result = JOptionPane.showConfirmDialog(null, authPopup, 
+                "Enter username and password to sign in", JOptionPane.OK_CANCEL_OPTION);
+                
+                if (result == JOptionPane.OK_OPTION) {
+                    String userpass = userField.getText() + ":" + passField.getText();
+                    String basicAuth = "Basic " + new String(Base64.getEncoder().encode(userpass.getBytes()));
+                    conn.disconnect();
+                    conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestProperty("Authorization", basicAuth);
+                    status = conn.getResponseCode();
+                } 
+            } 
+
             if (status >= HttpURLConnection.HTTP_BAD_REQUEST) {
                 htmlPane.setContentType("text/html");
                 htmlPane.setText("<html><body><h1>Error " + status + "</h1><p>" + conn.getResponseMessage() + "</p></body></html>");
             } else {
-                htmlPane.setPage(url);
-                currentUrl = url.toString();
+                htmlPane.setPage(conn.getURL());
+                currentUrl = conn.getURL().toString();
                 urlField.setText(currentUrl);
                 if (!historyListModel.contains(currentUrl)) {
                     historyListModel.addElement(currentUrl);
@@ -175,8 +198,6 @@ public class App extends JFrame implements ActionListener {
             e.printStackTrace();
         }
     }
-    
-    
     
     public static void main(String[] args) {
         new App();
