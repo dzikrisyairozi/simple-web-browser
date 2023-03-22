@@ -2,6 +2,9 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
+import java.io.BufferedInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.*;
 import java.util.Base64;
 
@@ -46,10 +49,18 @@ public class App extends JFrame implements ActionListener {
             }
         });
 
+        JButton downloadButton = new JButton("Download");
+        downloadButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                downloadURL(currentUrl);
+            }
+        });
+
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         buttonPanel.add(backButton);
         buttonPanel.add(forwardButton);
         buttonPanel.add(refreshButton);
+        buttonPanel.add(downloadButton);
         urlPanel.add(buttonPanel, BorderLayout.WEST);
         progressBar = new JProgressBar();
         progressBar.setStringPainted(true); 
@@ -197,6 +208,43 @@ public class App extends JFrame implements ActionListener {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    private void downloadURL(String urlString) {
+        try {
+            URL url = new URL(urlString);
+            BufferedInputStream bis = new BufferedInputStream(url.openStream());
+
+            String fileName = parseHTML(urlString);
+
+            String username = System.getProperty("user.name");
+
+            FileOutputStream fis = new FileOutputStream("C:\\Users\\"+username+"\\Downloads\\"+fileName);
+            byte[] buffer = new byte[1024];
+            int count=0;
+            while((count = bis.read(buffer,0,1024)) != -1)
+            {
+                fis.write(buffer, 0, count);
+            }
+            fis.close();
+            bis.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    private String parseHTML(String urlString){
+        try {
+            URL url = new URL(urlString);
+            URLConnection connection = url.openConnection();
+            String contentName = urlString;
+            contentName = contentName.substring(contentName.lastIndexOf("/") + 1);
+            contentName = contentName.substring(0, contentName.lastIndexOf("."));
+            String extension = url.getPath().substring(url.getPath().lastIndexOf(".") + 1);
+
+            return contentName + "." + extension;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
     
     public static void main(String[] args) {
